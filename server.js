@@ -391,6 +391,81 @@ app.delete('/pedido/:id', async (req, res) => {
   }
 });
 
+app.get('/detallespedido', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM OrderItems');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/detallespedido/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM OrderItems WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Elemento de orden no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/detallespedido', async (req, res) => {
+  const { order_id, artwork_id, quantity, price } = req.body;
+
+  if (!order_id || !artwork_id || !quantity || !price) {
+    return res.status(400).json({ error: 'Order_id, artwork_id, quantity y price son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO OrderItems (order_id, artwork_id, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *',
+      [order_id, artwork_id, quantity, price]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/detallespedido/:id', async (req, res) => {
+  const { id } = req.params;
+  const { order_id, artwork_id, quantity, price } = req.body;
+
+  if (!order_id || !artwork_id || !quantity || !price) {
+    return res.status(400).json({ error: 'Order_id, artwork_id, quantity y price son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE OrderItems SET order_id = $1, artwork_id = $2, quantity = $3, price = $4 WHERE id = $5 RETURNING *',
+      [order_id, artwork_id, quantity, price, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Elemento de orden no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/detallespedido/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM OrderItems WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Elemento de orden no encontrado' });
+    }
+    res.json({ message: 'Elemento de orden eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Start the server
 app.listen(3000, () => {
