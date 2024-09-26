@@ -165,6 +165,232 @@ app.delete('/categoria/:id', async (req, res) => {
   }
 });
 
+app.get('/artworks', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Artworks');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/artworks/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM Artworks WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Obra de arte no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/artworks', async (req, res) => {
+  const { title, description, price, artist_id, category_id, image_url } = req.body;
+
+  // Verificar que los campos requeridos existan
+  if (!title || !price || !artist_id || !category_id) {
+    return res.status(400).json({ error: 'Title, price, artist_id y category_id son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO Artworks (title, description, price, artist_id, category_id, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [title, description, price, artist_id, category_id, image_url]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/artworks/:id', async (req, res) => {
+  const { id } = req.params;
+  const { title, description, price, artist_id, category_id, image_url } = req.body;
+
+  if (!title || !price || !artist_id || !category_id) {
+    return res.status(400).json({ error: 'Title, price, artist_id y category_id son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE Artworks SET title = $1, description = $2, price = $3, artist_id = $4, category_id = $5, image_url = $6 WHERE id = $7 RETURNING *',
+      [title, description, price, artist_id, category_id, image_url, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Obra de arte no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/artworks/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM Artworks WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Obra de arte no encontrada' });
+    }
+    res.json({ message: 'Obra de arte eliminada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/usuario', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Customers');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/usuario/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM Customers WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/usuario', async (req, res) => {
+  const { name, email, address, phone } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ error: 'El nombre y el email son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO Customers (name, email, address, phone) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, email, address, phone]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/usuario/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, email, address, phone } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ error: 'El nombre y el email son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE Customers SET name = $1, email = $2, address = $3, phone = $4 WHERE id = $5 RETURNING *',
+      [name, email, address, phone, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/usuario/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM Customers WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+    res.json({ message: 'Cliente eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/pedido', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Orders');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/pedido/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM Orders WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/pedido', async (req, res) => {
+  const { customer_id, status } = req.body;
+
+  if (!customer_id || !status) {
+    return res.status(400).json({ error: 'Customer_id y status son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO Orders (customer_id, status) VALUES ($1, $2) RETURNING *',
+      [customer_id, status]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/pedido/:id', async (req, res) => {
+  const { id } = req.params;
+  const { customer_id, status } = req.body;
+
+  if (!customer_id || !status) {
+    return res.status(400).json({ error: 'Customer_id y status son requeridos' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE Orders SET customer_id = $1, status = $2 WHERE id = $3 RETURNING *',
+      [customer_id, status, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/pedido/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM Orders WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    res.json({ message: 'Orden eliminada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Start the server
 app.listen(3000, () => {
