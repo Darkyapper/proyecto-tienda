@@ -165,6 +165,7 @@ app.delete('/categoria/:id', async (req, res) => {
   }
 });
 
+/// Endpoints for Artworks
 app.get('/artworks', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Artworks');
@@ -241,6 +242,7 @@ app.delete('/artworks/:id', async (req, res) => {
   }
 });
 
+/// Endpoints for Customer
 app.get('/usuario', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Customers');
@@ -316,6 +318,7 @@ app.delete('/usuario/:id', async (req, res) => {
   }
 });
 
+/// Endpoints for Orders
 app.get('/pedido', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Orders');
@@ -391,6 +394,7 @@ app.delete('/pedido/:id', async (req, res) => {
   }
 });
 
+/// Endpoints for OrderItems
 app.get('/detallespedido', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM OrderItems');
